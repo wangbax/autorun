@@ -2,35 +2,37 @@
 #include <string>
 #include <iostream>
 
-std::wstring GetExePath(const std::wstring& appName) {
+std::wstring GetExePath() {
     wchar_t buffer[MAX_PATH];
-    // 获取当前执行路径
+    // 鑾峰彇褰撳墠鎵ц璺緞
     GetModuleFileName(NULL, buffer, MAX_PATH);
     std::wstring currentPath(buffer);
-    // 找到最后一个反斜杠，以获取目录路径
+    // 鎵惧埌鏈�鍚庝竴涓弽鏂滄潬锛屼互鑾峰彇鐩綍璺緞
     size_t lastBackslash = currentPath.find_last_of(L"\\");
     std::wstring directory = currentPath.substr(0, lastBackslash + 1);
-    // 拼接目录和应用程序名称来形成完整路径
-    return directory + appName;
+    return directory;
 }
 
 void RunProcess(const std::wstring& appName) {
-    std::wstring exePath = GetExePath(appName);
+    std::wstring directory = GetExePath();
+    std::wstring exePath = directory + appName;
+
     SHELLEXECUTEINFO sei = { sizeof(SHELLEXECUTEINFO) };
     sei.lpVerb = L"open";
     sei.lpFile = exePath.c_str();
+    sei.lpDirectory = directory.c_str();
     sei.nShow = SW_SHOWNORMAL;
     sei.fMask = SEE_MASK_NOCLOSEPROCESS;
     if (!ShellExecuteEx(&sei)) {
         WCHAR message[64];
-        wsprintfW(message, L"启动失败: %d", GetLastError());
-        // MessageBox(NULL, message, L"错误", MB_OK);
+        wsprintfW(message, L"鍚姩澶辫触: %d", GetLastError());
+        // MessageBox(NULL, message, L"閿欒", MB_OK);
     }
 }
 
 int wmain(int argc, wchar_t* argv[]) {
     if (argc != 2) {
-        std::wcerr << L"用法: " << argv[0] << L" <可执行文件名>" << std::endl;
+        std::wcerr << L"鐢ㄦ硶: " << argv[0] << L" <鍙墽琛屾枃浠跺悕>" << std::endl;
         return 1;
     }
 
